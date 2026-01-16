@@ -1,0 +1,22 @@
+[project]
+name = "pyflightsim"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "FelipePassarela", email = "126916744+FelipePassarela@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.1",
+    "pyglm>=2.8.3",
+    "vector>=1.7.0",
+]
+
+[project.scripts]
+pyflightsim = "pyflightsim.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
