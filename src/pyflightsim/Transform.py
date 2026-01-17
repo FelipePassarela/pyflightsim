@@ -1,4 +1,3 @@
-from glm import mat4x2
 from pyglm import glm
 
 
@@ -21,8 +20,9 @@ class Transform:
         rotation_only = glm.mat3(self.model())
         return rotation_only * vec
 
-    def apply_to_point(self, point: glm.vec4) -> mat4x2:
-        return self.model() * point
+    def apply_to_point(self, point: glm.vec3) -> glm.vec3:
+        p4 = glm.vec4(point, 1)  # ty:ignore[no-matching-overload]
+        return glm.vec3(self.model() * p4)
 
     @property
     def forward(self) -> glm.vec3:
