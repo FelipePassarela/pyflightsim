@@ -1,3 +1,5 @@
+import argparse
+
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,7 +9,7 @@ from pyglm import glm
 from pyflightsim.RigidBody import RigidBody
 from pyflightsim.Transform import Transform
 
-N_FRAMES = 120
+N_FRAMES = 480
 DELTA_TIME = 0.016
 BOX_SIZE = 10.0
 AXIS_LENGTH = BOX_SIZE * 0.15
@@ -84,8 +86,24 @@ def update(frame: int) -> tuple:
 
 
 def main() -> None:
-    _ = animation.FuncAnimation(fig, update, frames=N_FRAMES, interval=16, repeat=True)
-    plt.show()
+    parse = argparse.ArgumentParser()
+    parse.add_argument(
+        "--no-gui",
+        "-n",
+        action="store_true",
+        help="Run the simulation without displaying the GUI and save it as a GIF file "
+        "instead.",
+    )
+    args = parse.parse_args()
+
+    ani = animation.FuncAnimation(
+        fig, update, frames=N_FRAMES, repeat=True, blit=False, interval=16
+    )
+
+    if args.no_gui:
+        ani.save("rigid_body_simulation.gif", writer="pillow", fps=50)
+    else:
+        plt.show()
 
 
 if __name__ == "__main__":
