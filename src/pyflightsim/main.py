@@ -4,67 +4,81 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from pyglm import glm
 
+from pyflightsim.RigidBody import RigidBody
 from pyflightsim.Transform import Transform
 
 N_FRAMES = 120
-AXIS_LENGTH = 0.3
 DELTA_TIME = 0.016
+BOX_SIZE = 10.0
+AXIS_LENGTH = BOX_SIZE * 0.15
 
 transform = Transform(
-    position=glm.vec3(0, 1, 0),
+    position=glm.vec3(0, BOX_SIZE / 2, 0),
     rotation=glm.quat(),
     scale=glm.vec3(1, 1, 1),
 )
+rigid_body = RigidBody(transform=transform, mass=10.0)
 
 fig = plt.figure()
 ax: Axes3D = fig.add_subplot(111, projection="3d")
-ax.set_xlabel(r"$X$")
-ax.set_ylabel(r"$Y$")
-ax.set_zlabel(r"$Z$")
-ax.set_xlim(-1.1, 1.1)
-ax.set_ylim(-1.1, 1.1)
-ax.set_zlim(0.0, 1.0)
 
-scat = ax.scatter(*transform.position)
+# Matplotlib -> OpenGL axis convention mapping
+ax.set_xlabel(r"$Z$")
+ax.set_ylabel(r"$X$")
+ax.set_zlabel(r"$Y$")
 
-# Local transform axis
-origin = transform.position
-axis_x = transform.right * AXIS_LENGTH
-axis_y = transform.up * AXIS_LENGTH
-axis_z = transform.forward * AXIS_LENGTH
+ax.set_xlim(-BOX_SIZE / 2, BOX_SIZE / 2)
+ax.set_ylim(-BOX_SIZE / 2, BOX_SIZE / 2)
+ax.set_zlim(-BOX_SIZE / 2, BOX_SIZE / 2)
 
-origin = transform.position
-quiver_x = ax.quiver(*origin, *axis_x, color="r", arrow_length_ratio=0.2)
-quiver_y = ax.quiver(*origin, *axis_y, color="g", arrow_length_ratio=0.2)
-quiver_z = ax.quiver(*origin, *axis_z, color="b", arrow_length_ratio=0.2)
+scat = ax.scatter(*transform.position, s=50)
+
+
+def draw_quivers(transform: Transform):
+    origin = transform.position.zxy
+    axis_x = transform.right * AXIS_LENGTH
+    axis_y = transform.up * AXIS_LENGTH
+    axis_z = transform.forward * AXIS_LENGTH
+
+    quiver_x = ax.quiver(*origin, *axis_z, color="r", arrow_length_ratio=0.2)
+    quiver_y = ax.quiver(*origin, *axis_x, color="g", arrow_length_ratio=0.2)
+    quiver_z = ax.quiver(*origin, *axis_y, color="b", arrow_length_ratio=0.2)
+    return quiver_x, quiver_y, quiver_z
+
+
+quiver_x, quiver_y, quiver_z = draw_quivers(transform)
+
+applied_force = glm.vec3(400, 400, 400)
+impact_point = glm.vec3(1, 0, 0)
+rigid_body.add_force_at(applied_force, impact_point)
 
 
 def update(frame: int) -> tuple:
     global quiver_x, quiver_y, quiver_z
 
-    angle_step = 360 / N_FRAMES
-    transform.rotate_by(glm.vec3(0, 0, angle_step))
-    forward = transform.up  # matplotlib z-axis points "up" and the y-axis "forward"
-    transform.position += forward * DELTA_TIME
+    rigid_body.update(dt=0.016)
+
+    for coord_idx in range(len(transform.position)):
+        coord = transform.position[coord_idx]
+        if coord < -BOX_SIZE / 2:
+            rigid_body.velocity *= -0.7
+            rigid_body.angular_velocity *= -0.8
+            transform.position[coord_idx] = -BOX_SIZE / 2
+        if coord > BOX_SIZE / 2:
+            rigid_body.velocity *= -0.7
+            rigid_body.angular_velocity *= -0.8
+            transform.position[coord_idx] = BOX_SIZE / 2
 
     scat._offsets3d = (
+        np.array([transform.position.z]),
         np.array([transform.position.x]),
         np.array([transform.position.y]),
-        np.array([transform.position.z]),
     )
 
     quiver_x.remove()
     quiver_y.remove()
     quiver_z.remove()
-
-    axis_x = transform.right * AXIS_LENGTH
-    axis_y = transform.up * AXIS_LENGTH
-    axis_z = transform.forward * AXIS_LENGTH
-
-    origin = transform.position
-    quiver_x = ax.quiver(*origin, *axis_x, color="r", arrow_length_ratio=0.2)
-    quiver_y = ax.quiver(*origin, *axis_y, color="g", arrow_length_ratio=0.2)
-    quiver_z = ax.quiver(*origin, *axis_z, color="b", arrow_length_ratio=0.2)
+    quiver_x, quiver_y, quiver_z = draw_quivers(transform)
 
     return (scat,)
 
