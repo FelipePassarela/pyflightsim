@@ -10,11 +10,11 @@ N_FRAMES = 120
 AXIS_LENGTH = 0.3
 DELTA_TIME = 0.016
 
-t = np.linspace(0, 2 * np.pi, N_FRAMES)
+t = np.linspace(0, 360, N_FRAMES)
 
 transform = Transform(
     position=glm.vec3(0, 1, 0),
-    rotation=glm.vec3(0, 0, 0),
+    rotation=glm.quat(),
     scale=glm.vec3(1, 1, 1),
 )
 
@@ -44,7 +44,8 @@ quiver_z = ax.quiver(*origin, *axis_z, color="b", arrow_length_ratio=0.2)
 def update(frame: int) -> tuple:
     global quiver_x, quiver_y, quiver_z
 
-    transform.rotation.z = np.degrees(t[frame])
+    euler_rotation = glm.vec3(0, 0, t[frame])
+    transform.rotation = glm.quat(glm.radians(euler_rotation))
     forward = transform.up  # matplotlib z-axis points "up" and the y-axis "forward"
     transform.position += forward * DELTA_TIME
 
