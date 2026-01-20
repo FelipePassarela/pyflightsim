@@ -38,7 +38,9 @@ class RigidBody:
         # Angular
         angular_acceleration = self.torque / self.inertia
         self.angular_velocity += angular_acceleration * dt
-        rotation = glm.quat(self.angular_velocity * dt)
+        angle = glm.length(self.angular_velocity) * dt
+        axis = glm.normalize(self.angular_velocity) if angle > 1e-6 else glm.vec3(1, 0, 0)
+        rotation = glm.angleAxis(angle, axis)
         self.transform.rotation *= rotation
 
         self.force = glm.vec3(0)
