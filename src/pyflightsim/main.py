@@ -63,12 +63,12 @@ def update(frame: int) -> tuple:
     for coord_idx in range(len(transform.position)):
         coord = transform.position[coord_idx]
         if coord < -BOX_SIZE / 2:
-            rigid_body.velocity *= -0.7
-            rigid_body.angular_velocity *= -0.8
+            rigid_body.velocity *= -0.8
+            rigid_body.angular_velocity *= -0.9
             transform.position[coord_idx] = -BOX_SIZE / 2
         if coord > BOX_SIZE / 2:
-            rigid_body.velocity *= -0.7
-            rigid_body.angular_velocity *= -0.8
+            rigid_body.velocity *= -0.8
+            rigid_body.angular_velocity *= -0.9
             transform.position[coord_idx] = BOX_SIZE / 2
 
     scat._offsets3d = (
