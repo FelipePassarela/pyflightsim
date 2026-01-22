@@ -52,7 +52,7 @@ quiver_x, quiver_y, quiver_z = draw_quivers(transform)
 
 applied_force = glm.vec3(400, 400, 400)
 impact_point = glm.vec3(1, 0, 0)
-rigid_body.add_force_at(applied_force, impact_point)
+rigid_body.apply_force_at(applied_force, impact_point)
 
 
 def update(frame: int) -> tuple:
